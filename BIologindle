@@ -1,0 +1,137 @@
+```python
+import tkinter as tk
+from tkinter import ttk
+import random
+from thefuzz import process
+
+
+
+
+FundoCor="#80EF80"
+TextoCor="#2B4C40"
+
+
+janela = tk.Tk()
+janela.title("Biologindle")
+janela.geometry("750x600")
+janela.resizable(True, True)
+janela.config(bg=FundoCor, cursor="hand2")
+
+
+
+
+
+titulo = tk.Label(janela, text="BIOLOGINDLE", font=("Courier New", 30, "bold"), bg=FundoCor, fg=TextoCor)
+titulo.pack(side="top", pady=(40, 10))
+
+
+
+
+
+
+entrada = ttk.Entry(janela, width=45, font=("Courier New", 50, "bold")) # Reparou no 'ttk.'?
+entrada.pack(side="top", pady=50, padx=300)
+
+
+
+
+
+
+
+
+
+
+seres_vivos = [
+    {
+        "nome": "Leão",
+        "reino": "Animalia",
+        "classe": "Mamífero",
+        "habitat": "Savana",
+        "alimentacao": "Carnívoro",
+        "continente": "África",
+        "locomocao": "Terrestre",
+        "atividade": "Diurno",
+        "tamanho": 1.2,
+        "peso": 190,
+        "longevidade": 15,
+    },
+]
+
+
+
+
+
+ser_secreto = random.choice(seres_vivos)
+tentativa = 0
+maxTentativas = 5
+
+
+
+mensagem = tk.Label(janela, text="Começe a adivinhar! Dê o seu melhor :>", font=("Arial", 12), bg=FundoCor, fg=TextoCor)
+mensagem.pack(pady=10)
+
+
+
+
+
+tabela = tk.Frame(janela)
+tabela.pack(pady=20)
+
+
+
+cabecalhos = ["Ser vivo", "Reino", "Classe", "Habitat", "Peso"]
+for coluna, texto in enumerate(cabecalhos):
+    ttk.Label(tabela, text=texto, font=("Arial", 10, "bold"), width=18).grid(row=0, column=coluna, padx=2, pady=2)
+
+def comparar(valor, valor_secreto):
+    if valor == valor_secreto:
+        return "#4caf50"
+    return "#777777"
+
+def criar_linha(animal):
+    for widget in tabela.winfo_children():
+        info = widget.grid_info()
+        if int(info["row"]) > 0:
+            widget.grid(row=int(info["row"]) + 1)
+
+    valores = [
+        (animal["nome"], "#333333"),
+        (animal["reino"], comparar(animal["reino"], ser_secreto["reino"])),
+        (animal["classe"], comparar(animal["classe"], ser_secreto["classe"])),
+        (animal["habitat"], comparar(animal["habitat"], ser_secreto["habitat"])),
+        (str(animal["peso"]) + " kg", comparar(animal["peso"], ser_secreto["peso"])),
+    ]
+
+    for coluna, (texto, cor) in enumerate(valores):
+        tk.Label(tabela, text=texto, bg=cor, fg="white", width=18).grid(row=1, column=coluna, padx=2, pady=2)
+
+def tentar():
+    global tentativa
+    nome = entrada.get().strip()
+    animal_escolhido = None
+
+    for animal in seres_vivos:
+        if animal["nome"].lower() == nome.lower():
+            animal_escolhido = animal
+            break
+
+    if animal_escolhido is None:
+        mensagem.config(text="Esse ser vivo não está na lista!")
+        return
+
+    tentativa += 1
+    criar_linha(animal_escolhido)
+
+    if animal_escolhido["nome"] == ser_secreto["nome"]:
+        mensagem.config(text="ACERTOU! 🎉")
+        botao.config(state="disabled")
+    else:
+        mensagem.config(text=f"Não foi esse! Tentativa {tentativa}.")
+
+    entrada.delete(0, tk.END)
+
+botao = ttk.Button(janela, text="TENTAR", command=tentar)
+botao.pack()
+entrada.bind("<Return>", lambda evento: tentar())
+
+janela.mainloop()
